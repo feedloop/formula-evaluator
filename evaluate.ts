@@ -2,8 +2,8 @@ import {
   buildExpressionParser,
   FunctionEvaluatorConfig,
   FunctionGeneratorConfig,
+  TypedExpression,
 } from "@feedloop/expression-parser";
-import { VariableGeneratorConfig } from "@feedloop/formula-editor";
 import { postgresConfig } from "@feedloop/formula-editor/dist/builtin";
 import { mergeConfig } from "@feedloop/formula-editor/dist/mergeConfig";
 import { evaluate as evaluateFormula } from "@feedloop/formula-editor/dist/evaluate";
@@ -102,10 +102,16 @@ const functionEvaluatorConfigs: FunctionEvaluatorConfig[] = [
   },
 ];
 
+type VariableConfig = {
+  name: string;
+  type: string;
+  value: string;
+};
+
 export const evaluate = (
   formula: string,
   target: Targets,
-  variables: VariableGeneratorConfig[]
+  variables: VariableConfig[] = []
 ) => {
   const config = mergeConfig(postgresConfig, { variables });
   const parse = buildExpressionParser(config);
@@ -118,28 +124,29 @@ export const evaluate = (
       target === "postgres"
         ? (functionGeneratorConfigs as any)
         : functionEvaluatorConfigs,
-    variables: variables as any,
-  });
-};
-
-type VariableConfig = {
-  name: string;
-  type: string;
-  value: string;
-};
-
-export const evaluateWithVariables = (
-  formula: string,
-  target: Targets,
-  variables: VariableConfig[]
-) =>
-  evaluate(
-    formula,
-    target,
-    variables.map((variable) => ({
+    variables: variables.map((variable) => ({
       name: variable.name,
       type: variable.type,
       generate: () => variable.value,
       evaluate: () => eval(variable.value),
-    }))
-  );
+    })),
+  });
+};
+
+export const evaluateAST = (
+  ast: TypedExpression,
+  target: Targets,
+  variables: VariableConfig[] = []
+) =>
+  evaluateFormula(ast, target, {
+    functions:
+      target === "postgres"
+        ? (functionGeneratorConfigs as any)
+        : functionEvaluatorConfigs,
+    variables: variables.map((variable) => ({
+      name: variable.name,
+      type: variable.type,
+      generate: () => variable.value,
+      evaluate: () => eval(variable.value),
+    })),
+  });

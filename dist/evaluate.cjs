@@ -2265,6 +2265,7 @@ var functionEvaluatorConfigs = [
     },
 ];
 var evaluate = function (formula, target, variables) {
+    if (variables === void 0) { variables = []; }
     var config = mergeConfig(postgresConfig, { variables: variables });
     var parse = lib.buildExpressionParser(config);
     var _a = parse(formula), ast = _a.ast, errors = _a.errors;
@@ -2275,17 +2276,28 @@ var evaluate = function (formula, target, variables) {
         functions: target === "postgres"
             ? functionGeneratorConfigs
             : functionEvaluatorConfigs,
-        variables: variables
+        variables: variables.map(function (variable) { return ({
+            name: variable.name,
+            type: variable.type,
+            generate: function () { return variable.value; },
+            evaluate: function () { return eval(variable.value); }
+        }); })
     });
 };
-var evaluateWithVariables = function (formula, target, variables) {
-    return evaluate(formula, target, variables.map(function (variable) { return ({
-        name: variable.name,
-        type: variable.type,
-        generate: function () { return variable.value; },
-        evaluate: function () { return eval(variable.value); }
-    }); }));
+var evaluateAST = function (ast, target, variables) {
+    if (variables === void 0) { variables = []; }
+    return evaluate$1(ast, target, {
+        functions: target === "postgres"
+            ? functionGeneratorConfigs
+            : functionEvaluatorConfigs,
+        variables: variables.map(function (variable) { return ({
+            name: variable.name,
+            type: variable.type,
+            generate: function () { return variable.value; },
+            evaluate: function () { return eval(variable.value); }
+        }); })
+    });
 };
 
 exports.evaluate = evaluate;
-exports.evaluateWithVariables = evaluateWithVariables;
+exports.evaluateAST = evaluateAST;
