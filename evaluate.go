@@ -39,17 +39,8 @@ func resultChain[T any, U any](r mo.Result[T], f func(T) mo.Result[U]) mo.Result
 	}
 }
 
-// add two results together ignoring the second result.
-func resultApplyFirst[T any, U any](r1 mo.Result[T], r2 mo.Result[U]) mo.Result[T] {
-	return resultChain(r1, func(val T) mo.Result[T] {
-		return resultChain(r2, func(_ U) mo.Result[T] {
-			return mo.Ok(val)
-		})
-	})
-}
-
 // add two results together ignoring the first result.
-func resultApplySecond[T any, U any](r1 mo.Result[T], r2 mo.Result[U]) mo.Result[U] {
+func resultApply[T any, U any](r1 mo.Result[T], r2 mo.Result[U]) mo.Result[U] {
 	if r1.IsError() {
 		return mo.Err[U](r1.Error())
 	} else {
@@ -80,7 +71,7 @@ func setGlobalValue(ctx *v8.Context, name string, jsonValue string) mo.Result[*v
 
 func run(ctx *v8.Context, script string) mo.Result[string] {
 	v8Result := mo.TupleToResult(ctx.RunScript(evaluateSource, "evaluate.js"))
-	v8Result = resultApplySecond(v8Result, mo.TupleToResult(ctx.RunScript(script, "main.js")))
+	v8Result = resultApply(v8Result, mo.TupleToResult(ctx.RunScript(script, "main.js")))
 	return resultMap(v8Result, func(val *v8.Value) string {
 		return val.String()
 	})
@@ -103,20 +94,20 @@ func EvaluateWithVariables(formula string, target Target, variableConfigs []Vari
 	valueResult := resultChain(jsonStrResult, func(jsonStr []byte) mo.Result[*v8.Value] {
 		return setGlobalValue(ctx, "variableConfigs", string(jsonStr))
 	})
-	return resultApplySecond(valueResult, run(ctx, fmt.Sprintf("evaluate('%s', '%s', variableConfigs)", formula, targetString(target)))).Get()
+	return resultApply(valueResult, run(ctx, fmt.Sprintf("evaluate('%s', '%s', variableConfigs)", formula, targetString(target)))).Get()
 }
 
 func EvaluateAST(jsonAST string, target Target) (string, error) {
 	ctx := v8.NewContext(iso)
 	valueResult := setGlobalValue(ctx, "ast", jsonAST)
-	return resultApplySecond(valueResult, run(ctx, fmt.Sprintf("evaluateAST(ast, '%s')", targetString(target)))).Get()
+	return resultApply(valueResult, run(ctx, fmt.Sprintf("evaluateAST(ast, '%s')", targetString(target)))).Get()
 }
 
 func evaluateASTWithVariables(jsonAST string, target Target, variableConfigs []VariableConfig) (string, error) {
 	ctx := v8.NewContext(iso)
 	jsonStrResult := mo.TupleToResult(json.Marshal(variableConfigs))
 	valueResult := resultChain(jsonStrResult, func(jsonStr []byte) mo.Result[*v8.Value] {
-		return resultApplySecond(setGlobalValue(ctx, "ast", jsonAST), setGlobalValue(ctx, "variableConfigs", string(jsonStr)))
+		return resultApply(setGlobalValue(ctx, "ast", jsonAST), setGlobalValue(ctx, "variableConfigs", string(jsonStr)))
 	})
-	return resultApplySecond(valueResult, run(ctx, fmt.Sprintf("evaluateAST(ast, '%s', variableConfigs)", targetString(target)))).Get()
+	return resultApply(valueResult, run(ctx, fmt.Sprintf("evaluateAST(ast, '%s', variableConfigs)", targetString(target)))).Get()
 }
