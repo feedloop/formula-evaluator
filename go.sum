@@ -1,0 +1,6 @@
+github.com/OlegStotsky/go-monads v0.0.0-20220508115803-e3a0e393ffdd h1:mR6vjHLtoHhv0A/zGZdunPbLgvqUM1HXEYFSxkMNcVQ=
+github.com/OlegStotsky/go-monads v0.0.0-20220508115803-e3a0e393ffdd/go.mod h1:WsrBY5FkfsEHAo75zCPGMNsaZw8B+hNzjL0oHFuHLgI=
+github.com/samber/mo v1.5.2 h1:MINtAxMiorTmlWWPmd8LBms0OoHZJsEEBY5yI/DXFa8=
+github.com/samber/mo v1.5.2/go.mod h1:pDuQgWscOVGGoEz+NAeth/Xq+MPAcXxCeph1XIAm/DU=
+rogchap.com/v8go v0.7.0 h1:kgjbiO4zE5itA962ze6Hqmbs4HgZbGzmueCXsZtremg=
+rogchap.com/v8go v0.7.0/go.mod h1:MxgP3pL2MW4dpme/72QRs8sgNMmM0pRc8DPhcuLWPAs=
