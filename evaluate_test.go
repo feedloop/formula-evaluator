@@ -144,7 +144,7 @@ func TestEvaluateASTWithVariables(t *testing.T) {
   },
   "type": "number"
 }`
-	msg, err := evaluateASTWithVariables(ast, Javascript, []VariableConfig{
+	msg, err := EvaluateASTWithVariables(ast, Javascript, []VariableConfig{
 		{
 			Name:  "five",
 			Type:  "number",

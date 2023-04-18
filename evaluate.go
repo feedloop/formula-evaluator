@@ -103,7 +103,7 @@ func EvaluateAST(jsonAST string, target Target) (string, error) {
 	return resultApply(valueResult, run(ctx, fmt.Sprintf("evaluateAST(ast, '%s')", targetString(target)))).Get()
 }
 
-func evaluateASTWithVariables(jsonAST string, target Target, variableConfigs []VariableConfig) (string, error) {
+func EvaluateASTWithVariables(jsonAST string, target Target, variableConfigs []VariableConfig) (string, error) {
 	ctx := v8.NewContext(iso)
 	jsonStrResult := mo.TupleToResult(json.Marshal(variableConfigs))
 	valueResult := resultChain(jsonStrResult, func(jsonStr []byte) mo.Result[*v8.Value] {
